@@ -5,7 +5,7 @@ acceptableBarsNumber = input.int(5, minval=1, title="Acceptable bars for ATR")
 smallThreshold = input.int(defval = 50, minval = 1, title = "Lower deviation (%)")
 largeThreshold = input.int(defval = 180, minval = 1, title = "Upper deviation (%)")
 stopLossPercentage = input.int(defval = 15, minval = 1, title = "Stop Loss from ATR (%)")
-displayAdditionalInfo = input.bool(true, title="Display Additional Infotamtion")
+displayAdditionalInfo = input.bool(true, title="Display additional information")
 
 float gerchikATR = 0
 float passedATR = 0
