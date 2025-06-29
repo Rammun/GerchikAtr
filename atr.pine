@@ -1,0 +1,82 @@
+//@version=6
+indicator("Gerchik ATR", overlay=true)
+
+acceptableBarsNumber = input.int(5, minval=1, title="Acceptable bars for ATR")
+smallThreshold = input.int(defval = 50, minval = 1, title = "Lower deviation (%)")
+largeThreshold = input.int(defval = 180, minval = 1, title = "Upper deviation (%)")
+stopLossPercentage = input.int(defval = 15, minval = 1, title = "Stop Loss from ATR (%)")
+displayAdditionalInfo = input.bool(true, title="Display Additional Infotamtion")
+
+float gerchikATR = 0
+float passedATR = 0
+float passedAtrPercentage = 0
+float stopLoss = 0
+
+getBarSize(int _shift) =>
+    _shift >= 0 ? high[_shift] - low[_shift] : 0
+
+getAcceptableBars(int _barIndex) =>
+    float[] tempBars = array.new_float()
+    float[] barSizes = array.new_float()
+    int[] cursorShifts = array.new_int()
+
+    limitOfAnalysis = acceptableBarsNumber * 2
+
+    if _barIndex > acceptableBarsNumber
+        while array.size(barSizes) < acceptableBarsNumber and array.size(tempBars) < limitOfAnalysis
+            if array.size(tempBars) < acceptableBarsNumber
+                cursor = array.size(tempBars) + 1
+                array.push(tempBars, getBarSize(cursor))
+                continue
+
+            float median = array.median(tempBars)
+
+            array.clear(barSizes)
+            array.clear(cursorShifts)
+
+            for i = 0 to array.size(tempBars) - 1
+                float barSize = array.get(tempBars, i)
+                if barSize > median * (smallThreshold / 100) and barSize < median * (largeThreshold / 100)
+                    array.push(barSizes, barSize)
+                    array.push(cursorShifts, i + 1)
+                else
+                    cursor = array.size(tempBars) + 1
+                    array.push(tempBars, getBarSize(cursor))
+
+            break
+
+    [barSizes, cursorShifts, tempBars]
+
+//  -------
+if barstate.islast
+    [barSizes, cursorShifts, tempBars] = getAcceptableBars(bar_index)
+
+    gerchikATR := array.size(barSizes) == acceptableBarsNumber ? array.avg(barSizes) : na
+    passedATR := close[1] - close[0]
+    passedAtrPercentage := passedATR / gerchikATR * 100
+    stopLoss := gerchikATR * stopLossPercentage / 100
+
+    string strAtr = str.format('ATR={0, number, #.####}\n', gerchikATR)
+    string strPassedATR = str.format('Passed {0, number, #.####} ({1, number, #.#}%)\n', passedATR, passedAtrPercentage)
+    string strStopLoss = str.format('Stop loss {0, number, #.####}\n', stopLoss)
+    if array.size(barSizes) > 0
+        string result = str.format('{0, date, yyyy-MM-dd}\n', time)
+        result += strAtr
+        result += strPassedATR
+        result += strStopLoss
+
+        if displayAdditionalInfo
+            for i = 0 to array.size(tempBars) - 1
+                _size = array.get(tempBars, i)
+                _time = str.format("{0, date, yyyy-MM-dd}", time[i + 1])
+                _isCalculatedBar = array.includes(barSizes, _size) ? '+' : '-'
+                result += str.format('{0}. ({1}) {2, number, #.####} {3}\n', i + 1, _time, _size, _isCalculatedBar)
+
+        resultLbl = label.new(time, high, text="", color=color.new(#000000, 100), textcolor=color.gray, textalign=text.align_left, xloc=xloc.bar_time)
+        label.set_xy(resultLbl, time + (time - time[1]) * 10, high)
+        label.set_text(resultLbl, result)
+
+plot(gerchikATR, title="ATR", display=display.status_line)
+plot(passedATR, title="Passed ATR", display=display.status_line)
+plot(passedAtrPercentage, title="Passed ATR %", display=display.status_line)
+plot(stopLoss, title="Stop Los", display=display.status_line)
