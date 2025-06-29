@@ -56,9 +56,9 @@ if barstate.islast
     passedAtrPercentage := passedATR / gerchikATR * 100
     stopLoss := gerchikATR * stopLossPercentage / 100
 
-    string strAtr = str.format('ATR={0, number, #.####}\n', gerchikATR)
-    string strPassedATR = str.format('Passed {0, number, #.####} ({1, number, #.#}%)\n', passedATR, passedAtrPercentage)
-    string strStopLoss = str.format('Stop loss {0, number, #.####}\n', stopLoss)
+    string strAtr = str.format('ATR={0, number, #.######}\n', gerchikATR)
+    string strPassedATR = str.format('Passed {0, number, #.######} ({1, number, #.#}%)\n', passedATR, passedAtrPercentage)
+    string strStopLoss = str.format('Stop loss {0, number, #.######}\n', stopLoss)
     if array.size(barSizes) > 0
         string result = str.format('{0, date, yyyy-MM-dd}\n', time)
         result += strAtr
@@ -70,9 +70,9 @@ if barstate.islast
                 _size = array.get(tempBars, i)
                 _time = str.format("{0, date, yyyy-MM-dd}", time[i + 1])
                 _isCalculatedBar = array.includes(barSizes, _size) ? '+' : '-'
-                result += str.format('{0}. ({1}) {2, number, #.####} {3}\n', i + 1, _time, _size, _isCalculatedBar)
+                result += str.format('{0}. ({1}) {2, number, #.######} {3}\n', i + 1, _time, _size, _isCalculatedBar)
 
-        resultLbl = label.new(time, high, text="", color=color.new(#000000, 100), textcolor=color.gray, textalign=text.align_left, xloc=xloc.bar_time)
+        var resultLbl = label.new(time, high, text="", color=color.new(#000000, 100), textcolor=color.gray, textalign=text.align_left, xloc=xloc.bar_time)
         label.set_xy(resultLbl, time + (time - time[1]) * 10, high)
         label.set_text(resultLbl, result)
 
