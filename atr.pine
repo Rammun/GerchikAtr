@@ -52,7 +52,7 @@ if barstate.islast
     [barSizes, cursorShifts, tempBars] = getAcceptableBars(bar_index)
 
     gerchikATR := array.size(barSizes) == acceptableBarsNumber ? array.avg(barSizes) : na
-    passedATR := close[1] - close[0]
+    passedATR := math.abs(close[1] - close)
     passedAtrPercentage := passedATR / gerchikATR * 100
     stopLoss := gerchikATR * stopLossPercentage / 100
 
